@@ -1,0 +1,37 @@
+name: Windows Build (Cached)
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+
+    # --- 缓存逻辑开始 ---
+    - name: Cache Build Folder
+      id: cache-build
+      uses: actions/cache@v4
+      with:
+        path: build
+        key: ${{ runner.os }}-msvc-build-${{ hashFiles('**/CMakeLists.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-msvc-build-
+    # --- 缓存逻辑结束 ---
+
+    - name: Configure CMake
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: cmake --build build --config Release -j 4
