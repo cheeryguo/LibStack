@@ -4,3 +4,9 @@
 [submodule "src/googletest-1.15.2"]
 	path = src/googletest-1.15.2
 	url = https://github.com/google/googletest.git
+[submodule "src/spdlog"]
+	path = src/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "src/protobuf"]
+	path = src/protobuf
+	url = https://github.com/protocolbuffers/protobuf.git
