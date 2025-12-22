@@ -3,21 +3,21 @@ find_program(PATCH_EXE patch REQUIRED)
 
 # --- 1. Library Build Options ---
 option(LIBSTACK_BUILD_GTEST "Build GoogleTest" ON)
-option(LIBSTACK_BUILD_PAHO "Build Paho MQTT C++" ON)
-option(LIBSTACK_BUILD_MOSQUITTO "Build Mosquitto" ON)
-option(LIBSTACK_BUILD_PROTOBUF "Build Protobuf" ON)
+option(LIBSTACK_BUILD_PAHO "Build Paho MQTT C++" OFF)
+option(LIBSTACK_BUILD_MOSQUITTO "Build Mosquitto" OFF)
+option(LIBSTACK_BUILD_PROTOBUF "Build Protobuf" OFF)
 option(LIBSTACK_BUILD_SPDLOG "Build spdlog" ON)
-option(LIBSTACK_BUILD_ZMQ "Build ZeroMQ and cppzmq" ON)
-option(LIBSTACK_BUILD_JSON "Build nlohmann_json" ON)
+option(LIBSTACK_BUILD_ZMQ "Build ZeroMQ and cppzmq" OFF)
+option(LIBSTACK_BUILD_JSON "Build nlohmann_json" OFF)
 option(LIBSTACK_BUILD_JSONCONS "Build jsoncons" OFF)
 option(LIBSTACK_BUILD_JWT "Build jwt-cpp" OFF)
 option(LIBSTACK_BUILD_SOES "Build SOES (with Zynq SPI patch)" OFF)
 option(LIBSTACK_BUILD_EIGEN "Build Eigen3" ON)
-option(LIBSTACK_BUILD_SML "Build SML" ON)
+option(LIBSTACK_BUILD_SML "Build SML" OFF)
 option(LIBSTACK_BUILD_PUGIXML "Build pugixml" ON)
 option(LIBSTACK_BUILD_MODBUS "Build libmodbus" OFF)
-option(LIBSTACK_BUILD_SOEM "Build SOEM" ON)
-option(LIBSTACK_BUILD_HYPODERMIC "Build Hypodermic" ON)
+option(LIBSTACK_BUILD_SOEM "Build SOEM" OFF)
+option(LIBSTACK_BUILD_HYPODERMIC "Build Hypodermic" OFF)
 
 # --- 2. Global Configurations ---
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
@@ -71,7 +71,7 @@ endif()
 # --- 6. spdlog ---
 if(LIBSTACK_BUILD_SPDLOG)
     set(SPDLOG_INSTALL ON CACHE BOOL "" FORCE)
-    add_subdirectory(spdlog-1.14.1)
+    add_subdirectory(spdlog-1.16)
 endif()
 
 # --- 7. ZeroMQ & cppzmq ---
@@ -89,7 +89,7 @@ endif()
 if(LIBSTACK_BUILD_JSON)
     set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
     set(JSON_Install ON CACHE BOOL "" FORCE)
-    add_subdirectory(json-3.11.3)
+    add_subdirectory(json-3.12)
 endif()
 
 # --- 9. jsoncons ---
@@ -125,7 +125,7 @@ endif()
 
 # --- 12. Eigen, SML, Pugixml, Modbus ---
 if(LIBSTACK_BUILD_EIGEN)
-    add_subdirectory(eigen-3.4.0)
+    add_subdirectory(eigen-3.4.1)
 endif()
 
 if(LIBSTACK_BUILD_SML)
@@ -133,7 +133,7 @@ if(LIBSTACK_BUILD_SML)
 endif()
 
 if(LIBSTACK_BUILD_PUGIXML)
-    add_subdirectory(pugixml-1.13)
+    add_subdirectory(pugixml-1.15)
 endif()
 
 if(LIBSTACK_BUILD_MODBUS)

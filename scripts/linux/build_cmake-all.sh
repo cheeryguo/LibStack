@@ -11,7 +11,7 @@ INSTALL_DIR="$ROOT_DIR/install"
 
 # Architectures and configurations
 ARCHITECTURES=("arm" "aarch64" "x86" "x64")
-CONFIGURATIONS=("Release")
+CONFIGURATIONS=("Release" "Debug")
 
 # Cross-compiler prefixes (adjust based on your setup)
 declare -A COMPILER_PREFIX=(
