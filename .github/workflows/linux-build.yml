@@ -33,7 +33,7 @@ jobs:
     - name: Install Dependencies
       run: |
         # Clean apt cache and force update
-        rm -rf /var/lib/apt/lists/*
+        sudo rm -rf /var/lib/apt/lists/*
         sudo apt-get update
         # Attempt to fix broken dependencies
         sudo apt-get install -f
