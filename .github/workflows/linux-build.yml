@@ -38,6 +38,8 @@ jobs:
           build-essential \
           cmake \
           patch \
+          gcc-multilib \
+          g++-multilib \
           gcc-arm-linux-gnueabihf \
           g++-arm-linux-gnueabihf \
           gcc-aarch64-linux-gnu \

@@ -74,7 +74,7 @@ build_json() {
     
     local build_path="$BUILD_DIR/$arch-$config/json"
     local install_path="$INSTALL_DIR/$arch"
-    local json_path="$ROOT_DIR/src/json-3.11.3"
+    local json_path="$ROOT_DIR/src/json-3.12"
 
     echo "Building JSON for $arch ($config) from $json_path to $install_path"    
     mkdir -p "$build_path"
