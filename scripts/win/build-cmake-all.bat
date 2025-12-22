@@ -89,8 +89,9 @@ set install_path=%INSTALL_ROOT%\%arch%-win
 if not exist "%build_path%" mkdir "%build_path%"
 if not exist "%install_path%" mkdir "%install_path%"
 
+echo Current Working Directory: %cd%
 pushd "%build_path%"
-
+echo Current Working Directory: %cd%
 :: 1. Define CMake flags
 :: Use absolute paths for INSTALL_PREFIX to avoid confusion
 set "abs_install_path=%PROJ_ROOT%%install_path%"
@@ -105,7 +106,7 @@ if /I "%arch%"=="x86" (
 
 :: 3. Run CMake configuration
 :: Use "%PROJ_ROOT%" instead of "../../" to precisely locate CMakeLists.txt
-cmake -G %GENERATOR% %cmake_flags% "%PROJ_ROOT%"
+cmake -G %GENERATOR% %cmake_flags% "%PROJ_ROOT%"/../../
 
 if %ERRORLEVEL% neq 0 (
     echo [ERROR] CMake Configuration failed for %arch%-%config%
