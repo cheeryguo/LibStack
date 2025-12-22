@@ -70,7 +70,11 @@ setlocal
 set arch=%1
 set config=%2
 
-echo Starting build for Architecture: %arch% | Configuration: %config%
+:: Use ^| to escape the pipe character in Batch
+echo.
+echo --------------------------------------------------------
+echo Starting build for Architecture: %arch% ^| Configuration: %config%
+echo --------------------------------------------------------
 
 :: Set build path (unique per config)
 set build_path=%BUILD_DIR%\%arch%-%config%
