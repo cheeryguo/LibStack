@@ -4,14 +4,58 @@
 # Configuration
 # ===========================================
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
-# Build and install directories
-ROOT_DIR=$SCRIPT_DIR/../../"
+ROOT_DIR="$SCRIPT_DIR/../../"  # Fixed syntax error from original
 BUILD_DIR="$ROOT_DIR/build"
 INSTALL_DIR="$ROOT_DIR/install"
 
-# Architectures and configurations
-ARCHITECTURES=("arm" "aarch64" "x86" "x64")
-CONFIGURATIONS=("Release" "Debug")
+# Valid options
+VALID_ARCHES=("all" "x86" "x64" "aarch64" "arm")
+VALID_CONFIGS=("all" "Release" "Debug")
+
+# Default values
+DEFAULT_ARCH="x64"
+DEFAULT_CONFIG="Release"
+
+# ===========================================
+# Parameter Handling
+# ===========================================
+# Parse input parameters
+arch="$1"
+config="$2"
+
+# Set defaults if parameters are not provided
+if [ -z "$arch" ]; then
+    arch="$DEFAULT_ARCH"
+fi
+if [ -z "$config" ]; then
+    config="$DEFAULT_CONFIG"
+fi
+
+# Validate architecture parameter
+if ! [[ " ${VALID_ARCHES[@]} " =~ " $arch " ]]; then
+    echo "Error: Invalid architecture '$arch'. Valid options: ${VALID_ARCHES[*]}"
+    exit 1
+fi
+
+# Validate configuration parameter
+if ! [[ " ${VALID_CONFIGS[@]} " =~ " $config " ]]; then
+    echo "Error: Invalid configuration '$config'. Valid options: ${VALID_CONFIGS[*]}"
+    exit 1
+fi
+
+# Determine target architectures to build
+if [ "$arch" = "all" ]; then
+    TARGET_ARCHES=("x86" "x64" "aarch64" "arm")
+else
+    TARGET_ARCHES=("$arch")
+fi
+
+# Determine target configurations to build
+if [ "$config" = "all" ]; then
+    TARGET_CONFIGS=("Release" "Debug")
+else
+    TARGET_CONFIGS=("$config")
+fi
 
 # Cross-compiler prefixes (adjust based on your setup)
 declare -A COMPILER_PREFIX=(
@@ -22,7 +66,7 @@ declare -A COMPILER_PREFIX=(
 )
 
 # ===========================================
-# Build for a specific architecture/config
+# Build functions (unchanged)
 # ===========================================
 build_json() {
     local arch="$1"
@@ -32,7 +76,7 @@ build_json() {
     local install_path="$INSTALL_DIR/$arch"
     local json_path="$ROOT_DIR/src/json-3.11.3"
 
-    echo "Building for $arch ($config) for $json_path and install to ($install_path)"    
+    echo "Building JSON for $arch ($config) from $json_path to $install_path"    
     mkdir -p "$build_path"
     cd "$build_path" || exit 1
     
@@ -54,7 +98,7 @@ build_json() {
             ;;
     esac
     
-    # Run CMake (top-level CMakeLists.txt includes src/)
+    # Run CMake
     cmake \
         -DJSON_Install=ON \
         -DJSON_BuildTests=OFF \
@@ -63,21 +107,21 @@ build_json() {
         $cmake_flags \
         "$json_path"
     if [ $? -ne 0 ]; then
-        echo "CMake configuration failed for $arch ($config)"
+        echo "CMake configuration failed for JSON $arch ($config)"
         cd - || exit 1
         return 1
     fi
     
     cmake --build . --config "$config" -j32
     if [ $? -ne 0 ]; then
-        echo "Build failed for $arch ($config)"
+        echo "Build failed for JSON $arch ($config)"
         cd - || exit 1
         return 1
     fi
     
     cmake --install . --config "$config"
     if [ $? -ne 0 ]; then
-        echo "Installation failed for $arch ($config)"
+        echo "Installation failed for JSON $arch ($config)"
         cd - || exit 1
         return 1
     fi
@@ -85,9 +129,6 @@ build_json() {
     cd - || exit 1
 }
 
-# ===========================================
-# Build for a specific architecture/config
-# ===========================================
 build_project() {
     local arch="$1"
     local config="$2"
@@ -95,7 +136,7 @@ build_project() {
     local build_path="$BUILD_DIR/$arch-$config"
     local install_path="$INSTALL_DIR/$arch"
 
-    echo "Building for $arch ($config)... and install to ($install_path)"    
+    echo "Building project for $arch ($config) to $install_path"    
     mkdir -p "$build_path"
     cd "$build_path" || exit 1
     
@@ -117,7 +158,7 @@ build_project() {
             ;;
     esac
     
-    # Run CMake (top-level CMakeLists.txt includes src/)
+    # Run CMake
     cmake \
         -DCMAKE_BUILD_TYPE="$config" \
         -DCMAKE_INSTALL_PREFIX:PATH="$install_path" \
@@ -147,31 +188,28 @@ build_project() {
 }
 
 # ===========================================
-# Main Script
+# Clean function (unchanged)
 # ===========================================
-# Clean old builds (optional)
 clean_builds() {
     read -p "Are you sure you want to clean old builds? (y/n): " answer
     if [ "$answer" = "y" ]; then
         rm -rf "$BUILD_DIR" "$INSTALL_DIR"
     fi
 }
-# clean_builds
+# clean_builds  # Uncomment to enable clean prompt
 
-# Build all combinations
-for arch in "${ARCHITECTURES[@]}"; do
-    unset OPENSSL_ROOT_DIR
-    OPENSSL_ROOT_DIR="$INSTALL_DIR/$arch"
-    export OPENSSL_ROOT_DIR
+# ===========================================
+# Main Build Process
+# ===========================================
+for arch in "${TARGET_ARCHES[@]}"; do
+    # Set environment variables for dependency paths
+    export OPENSSL_ROOT_DIR="$INSTALL_DIR/$arch"
+    export nlohmann_json_DIR="$INSTALL_DIR/$arch/share/cmake/nlohmann_json/"
 
-    unset nlohmann_json_DIR    
-    nlohmann_json_DIR="$INSTALL_DIR/$arch/share/cmake/nlohmann_json/"
-    export nlohmann_json_DIR
-
-    for config in "${CONFIGURATIONS[@]}"; do
+    for config in "${TARGET_CONFIGS[@]}"; do
         build_json "$arch" "$config"
         build_project "$arch" "$config"
     done
 done
 
-echo "All builds completed!"
+echo "All specified builds completed!"

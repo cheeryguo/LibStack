@@ -1,10 +1,24 @@
+
+### Key Changes:
+#1. **Added Cross-Compilation Tools**: Installed `gcc-arm-linux-gnueabihf`, `g++-arm-linux-gnueabihf` (for ARM) and `gcc-aarch64-linux-gnu`, `g++-aarch64-linux-gnu` (for AArch64) in the dependency step.
+#
+#2. **Updated Build Script Call**: Changed to use `scripts/linux/build_cmake-all.sh` with `all all` parameters to build all architectures and configurations.
+#
+#3. **Improved Artifact Preparation**: 
+#   - Creates separate tarballs for each architecture (x64, x86, arm, aarch64)
+#   - Uses the root `install` directory (instead of `build/install`) as the source
+#   - Adds basic error checking for missing architecture directories
+#
+#4. **Updated Release Artifacts**: Includes all four architecture-specific tarballs in the GitHub release.
+#
+#5. **Enhanced Cache Key**: Added `**/*.sh` to the cache key to invalidate cache when build scripts change.{insert\_element\_0\_}```yaml
 name: Linux Build and Release
 
 on:
   push:
     tags:
-      - 'v*' # 当你推送以 v 开头的标签（如 v1.0.0）时触发 Release
-  workflow_dispatch: # 允许手动触发
+      - 'v*' # Trigger release on version tags
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   build-and-release:
@@ -19,33 +33,53 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential cmake patch
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          patch \
+          # Cross-compilation tools for ARM
+          gcc-arm-linux-gnueabihf \
+          g++-arm-linux-gnueabihf \
+          # Cross-compilation tools for AArch64
+          gcc-aarch64-linux-gnu \
+          g++-aarch64-linux-gnu
 
     - name: Cache Build Folder
       uses: actions/cache@v4
       with:
         path: build
-        key: ${{ runner.os }}-build-${{ hashFiles('**/CMakeLists.txt') }}
+        key: ${{ runner.os }}-build-${{ hashFiles('**/CMakeLists.txt', '**/*.sh') }}
         restore-keys: |
           ${{ runner.os }}-build-
 
     - name: Run Build Script
-      # 确保脚本有执行权限并运行
       run: |
-        chmod +x build-cmake.sh
-        ./build-cmake.sh
+        # Make sure the build script is executable
+        chmod +x scripts/linux/build_cmake-all.sh
+        # Build all architectures and configurations
+        ./scripts/linux/build_cmake-all.sh all all
 
     - name: Prepare Artifacts for Release
-      # 假设 build-cmake.sh 将结果安装到了 build/install 目录
-      # 我们将其压缩为 tar.gz
       run: |
-        tar -czvf libstack-linux-x64.tar.gz -C build/install .
+        # Create separate archives for each architecture
+        for arch in x64 x86 arm aarch64; do
+          if [ -d "install/$arch" ]; then
+            tar -czvf "libstack-linux-$arch.tar.gz" -C "install/$arch" .
+            echo "Created archive for $arch"
+          else
+            echo "Warning: No installation files found for $arch"
+          fi
+        done
 
     - name: Create GitHub Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v2
       with:
-        files: libstack-linux-x64.tar.gz
+        files: |
+          libstack-linux-x64.tar.gz
+          libstack-linux-x86.tar.gz
+          libstack-linux-arm.tar.gz
+          libstack-linux-aarch64.tar.gz
         name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
