@@ -32,8 +32,13 @@ jobs:
 
     - name: Install Dependencies
       run: |
+        # Enable architectures for cross-compilation
+        sudo dpkg --add-architecture armhf
+        sudo dpkg --add-architecture arm64
+        
         sudo apt-get update
-        # Install build tools and cross-compilation toolchains for ARM/AArch64
+        
+        # Install build tools and cross-compilation toolchains
         sudo apt-get install -y \
           build-essential \
           cmake \
