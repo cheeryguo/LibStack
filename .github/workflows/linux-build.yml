@@ -72,23 +72,30 @@ jobs:
     - name: Prepare Artifacts for Release
       run: |
         # Create separate archives for each architecture
+        # Create directory and compress based on matrix architecture
+        mkdir -p release_dist
         for arch in x64; do
           if [ -d "install/$arch" ]; then
-            tar -czvf "libstack-linux-$arch.tar.gz" -C "install/$arch" .
+            tar -czvf "release_dist/libstack-linux-$arch.tar.gz" -C "install/$arch" .
             echo "Created archive for $arch"
           else
             echo "Warning: No installation files found for $arch"
           fi
         done
-
+       
     - name: Create GitHub Release
-      if: startsWith(github.ref, 'refs/tags/')
+      # Trigger if it's a tag OR if it's a manual trigger
+      if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
       uses: softprops/action-gh-release@v2
       with:
         files: |
-          libstack-linux-x64.tar.gz
-        name: Release ${{ github.ref_name }}
+          release_dist/libstack-linux-x64.tar.gz
+        # Use tag name if available, otherwise use a default name
+        name: Release ${{ github.ref_name || 'Manual Build' }}
+        # If manually triggered, you might want to point it to a specific tag like 'latest'
+        tag_name: ${{ github.ref_name || 'latest' }}
         draft: false
         prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+ 
