@@ -1,0 +1,244 @@
+name: Multi-platform Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger release on version tags
+    branches:
+      - master
+  workflow_dispatch: # Allow manual trigger
+    inputs:
+      arch_choice:
+        type: choice
+        description: 'Select architecture to build (Linux only, Manual only)'
+        required: true
+        default: 'x64'
+        options: [all, x64, x86, aarch64, arm]
+      version:
+        description: 'Manual version name'
+        required: false
+        default: 'manual'
+
+permissions:
+  contents: write
+
+jobs:
+  # ==========================================
+  # Linux Build Job
+  # ==========================================
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86, x64, aarch64, arm]
+        configs: [Release]
+
+    # Filter jobs based on manual selection (Linux specific)
+    if: |
+      github.event_name != 'workflow_dispatch' || 
+      github.event.inputs.arch_choice == 'all' || 
+      github.event.inputs.arch_choice == matrix.arch
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Get Version and Metadata
+      id: meta
+      run: |
+        # Determine version name
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
+          VERSION="${{ github.event.inputs.version }}"
+        elif [ "${{ github.ref_type }}" = "tag" ]; then
+          VERSION="${{ github.ref_name }}"
+        elif [ "${{ github.ref_name }}" = "master" ]; then
+          VERSION="latest"
+        else
+          VERSION="dev-${{ github.ref_name }}"
+        fi
+        SHA=$(git rev-parse --short HEAD)
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "ASSET_NAME=libstack-${VERSION}-linux-${{ matrix.arch }}-${SHA}" >> $GITHUB_ENV
+
+    - name: Install Dependencies
+      run: |
+        # 1. Base tools for all architectures
+
+        # Clean apt cache and force update
+        sudo rm -rf /var/lib/apt/lists/*
+        sudo apt-get update
+
+        # Attempt to fix broken dependencies
+        sudo apt-get install -f
+
+        # Clean up any partial installs
+        sudo apt-get autoremove && sudo apt-get autoclean
+
+        # We only need the cross-toolchain packages, which exist in the amd64 repo.
+        # Do NOT use 'dpkg --add-architecture' unless you need to install
+        # ARM-native libraries (like libssl-dev:arm64).
+        sudo apt-get install -y build-essential cmake patch
+
+        # 2. Conditional installation based on current matrix architecture
+        case "${{ matrix.arch }}" in
+          "x86")
+            sudo apt-get install -y gcc-multilib g++-multilib
+            ;;
+          "aarch64")
+            sudo apt-get install -y gcc-13-aarch64-linux-gnu
+            sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+            ;;
+          "arm")
+            sudo apt-get install -y gcc-13-arm-linux-gnueabihf
+            sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
+            ;;
+        esac
+
+        #  3. Clean up any partial installs
+        sudo apt-get autoremove && sudo apt-get autoclean
+
+    - name: Cache Build Folder
+      if: env.SHOULD_RUN == 'true'
+      uses: actions/cache@v4
+      with:
+        path: build
+        # Updated key to include arch to prevent cross-contamination
+        key: ${{ runner.os }}-build-${{ matrix.arch }}-${{ hashFiles('**/CMakeLists.txt', '**/*.sh') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ matrix.arch }}-
+
+    - name: Run Build Script
+      run: |
+        # Make sure the build script is executable
+        chmod +x scripts/linux/build_cmake-all.sh
+        # Pass current matrix parameters to the shell script
+        ./scripts/linux/build_cmake-all.sh ${{ matrix.arch }} ${{ matrix.configs }}
+
+    - name: Prepare Artifacts
+      run: |
+        # Create separate archives for each architecture
+        # Create directory and compress based on matrix architecture
+        mkdir -p release_dist
+        if [ -d "install/${{ matrix.arch }}" ]; then
+          tar -czvf release_dist/${{ env.ASSET_NAME }}.tar.gz -C install/${{ matrix.arch }} .
+          echo "Successfully archived install/${{ matrix.arch }}"
+        else
+          echo "Error: Directory install/${{ matrix.arch }} not found!"
+          exit 1
+        fi
+
+    - name: Upload to Release
+      # Trigger if it's a tag OR if it's a manual trigger
+      if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' || github.ref_name == 'master'
+      uses: softprops/action-gh-release@v2
+      with:
+        files: release_dist/${{ env.ASSET_NAME }}.tar.gz
+        # The tag_name in GitHub Release will be 'latest' for master branch pushes
+        tag_name: ${{ env.VERSION }}
+        name: Release ${{ env.VERSION }}
+        # If it's a 'latest' release, overwrite the existing one
+        prerelease: ${{ env.VERSION == 'latest' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ==========================================
+  # Windows Build Job
+  # ==========================================
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Windows supports x64 and x86
+        arch: [x64, x86]
+    # Skip job if manual choice doesn't match matrix arch (matches only x64/x86/all)
+    if: |
+      github.event_name != 'workflow_dispatch' || 
+      github.event.inputs.arch_choice == 'all' || 
+      github.event.inputs.arch_choice == matrix.arch
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Get Version and Metadata
+      id: meta
+      shell: pwsh
+      run: |
+        if ("${{ github.event_name }}" -eq "workflow_dispatch" -and "${{ github.event.inputs.version }}" -ne "") {
+          $VERSION = "${{ github.event.inputs.version }}"
+        } elseif ("${{ github.ref_type }}" -eq "tag") {
+          $VERSION = "${{ github.ref_name }}"
+        } elseif ("${{ github.ref_name }}" -eq "master") {
+          $VERSION = "latest"
+        } else {
+          $VERSION = "dev-${{ github.ref_name }}"
+        }
+        # 2. Get short git SHA
+        $SHA = (git rev-parse --short HEAD)
+
+        # 3. Export to environment
+        echo "VERSION=$VERSION" >> $env:GITHUB_ENV
+        echo "SHORT_SHA=$SHA" >> $env:GITHUB_ENV
+        # Format: libstack-<version>-windows-x64-<sha>
+        echo "ASSET_NAME=libstack-$VERSION-windows-x64-$SHA" >> $env:GITHUB_ENV
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Cache Build Folder
+      uses: actions/cache@v4
+      with:
+        path: build
+        key: ${{ runner.os }}-msvc-build-${{ hashFiles('**/CMakeLists.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-msvc-build-
+
+    - name: Run Build Script
+      shell: cmd
+      # Pass architecture and config to the batch script
+      run: |
+        # Ensure build.bat is aware of the target architecture if needed
+        call scripts/win/build-cmake-all.bat ${{ matrix.arch }} Release
+
+    - name: Prepare Artifacts
+      shell: pwsh
+      run: |
+        mkdir release_dist -ErrorAction SilentlyContinue
+        # Matches the install_path in build.bat: install/%arch%-win
+        $TARGET_DIR = "install/${{ matrix.arch }}-win"
+        
+        if (Test-Path $TARGET_DIR) {
+          Compress-Archive -Path "$TARGET_DIR/*" -DestinationPath "release_dist/${{ env.ASSET_NAME }}.zip"
+          Write-Host "Successfully archived $TARGET_DIR"
+        } else {
+          Write-Error "Error: Directory $TARGET_DIR not found! Check build.bat logs."
+          exit 1
+        }
+
+    - name: Upload to Release
+      # Trigger for Tags, Master branch pushes, or Manual triggers
+      if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' || github.ref_name == 'master'
+      uses: softprops/action-gh-release@v2
+      with:
+        files: release_dist/${{ env.ASSET_NAME }}.zip
+        tag_name: ${{ env.VERSION }}
+        name: Release ${{ env.VERSION }}
+        # Set as prerelease for 'latest' tags
+        prerelease: ${{ env.VERSION == 'latest' }}
+        body: |
+          Windows Build Metadata:
+          - Version: ${{ env.VERSION }}
+          - Branch/Tag: ${{ github.ref }}
+          - Arch: x64 (MSVC)
+          - Commit: ${{ github.sha }}
+        draft: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

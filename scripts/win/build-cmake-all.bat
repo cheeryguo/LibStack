@@ -1,38 +1,65 @@
 @echo off
 :: ===========================================
-:: Build third-party libraries for Windows
-:: Supports: MSVC/MinGW, x86/x64, Release/Debug
+:: Build script for Windows (Multi-Arch & Multi-Config)
+:: Usage: build.bat [arch] [config]
+:: Supports: x86/x64, Release/Debug
 :: Installs to shared folders per architecture
+:: Examples: 
+::   build.bat all all      (Builds everything)
+::   build.bat x64 Release  (Builds specific)
+
 :: ===========================================
+
+:: Set arguments with defaults
+:: Use %1 from GitHub Actions matrix (e.g., x64 or x86)
+set USER_ARCH=%~1
+if "%USER_ARCH%"=="" set USER_ARCH=x64
+
+:: Use %2 from GitHub Actions (e.g., Release)
+set USER_CONFIG=%~2
+if "%USER_CONFIG%"=="" set USER_CONFIG=Release
 
 :: Configuration
 set SRC_DIR=../../src
 set BUILD_DIR=../../build
 set INSTALL_DIR=../../install
 
-:: Architectures and configurations
-set ARCHITECTURES=x86
-set CONFIGURATIONS=Release Debug
-
-:: Compiler settings (true for MSVC, false for MinGW)
-set USE_MSVC=true
-:: MSVC generator (adjust for your VS version)
 set GENERATOR="Visual Studio 17 2022"
-:: MinGW generator
-set MINGW_GENERATOR="MinGW Makefiles"
+
+echo ===========================================
+echo Requested Arch   : %USER_ARCH%
+echo Requested Config : %USER_CONFIG%
+echo ===========================================
 
 :: Clean old builds (uncomment if needed)
 :: rmdir /s /q %BUILD_DIR%
 :: rmdir /s /q %INSTALL_DIR%
 
-:: Main loop
-for %%a in (%ARCHITECTURES%) do (
-    for %%c in (%CONFIGURATIONS%) do (
-        call :build_project %%a %%c
-    )
+:: 1. Handle Architecture Loop
+if /I "%USER_ARCH%"=="all" (
+    call :handle_config x86 %USER_CONFIG%
+    call :handle_config x64 %USER_CONFIG%
+) else (
+    call :handle_config %USER_ARCH% %USER_CONFIG%
 )
 
-echo All builds completed!
+echo.
+echo All requested tasks completed!
+goto :eof
+
+:: ===========================================
+:: Function: Handle Configuration Loop
+:: ===========================================
+:handle_config
+set current_arch=%1
+set current_config=%2
+
+if /I "%current_config%"=="all" (
+    call :build_project %current_arch% Release
+    call :build_project %current_arch% Debug
+) else (
+    call :build_project %current_arch% %current_config%
+)
 goto :eof
 
 :: ===========================================
@@ -43,45 +70,43 @@ setlocal
 set arch=%1
 set config=%2
 
-echo Building %arch% (%config%)...
+echo Starting build for Architecture: %arch% | Configuration: %config%
 
 :: Set build path (unique per config)
 set build_path=%BUILD_DIR%\%arch%-%config%
 :: Set install path (shared per arch)
 set install_path=%INSTALL_DIR%\%arch%-win
 
-mkdir "%build_path%" 2>nul
-mkdir "%install_path%" 2>nul
+if not exist "%build_path%" mkdir "%build_path%"
+if not exist "%install_path%" mkdir "%install_path%"
 
 pushd "%build_path%"
 
-:: Architecture-specific flags
-set cmake_flags=-DCMAKE_INSTALL_PREFIX=../../%install_path% -DCMAKE_BUILD_TYPE=%config% -DOPENSSL_ROOT_DIR=../../%install_path%
+:: Base CMake flags
+set cmake_flags=-DCMAKE_INSTALL_PREFIX=../../%install_path% -DCMAKE_BUILD_TYPE=%config%
 
-if "%USE_MSVC%"=="true" (
-    if "%arch%"=="x86" (
-        set cmake_flags=%cmake_flags% -A Win32
-    ) else if "%arch%"=="x64" (
-        set cmake_flags=%cmake_flags% -A x64
-    )
-    set generator=%GENERATOR%
+:: Set MSVC architecture architecture flag (-A)
+if /I "%arch%"=="x86" (
+    set cmake_flags=%cmake_flags% -A Win32
 ) else (
-    if "%arch%"=="x86" (
-        set cmake_flags=%cmake_flags% -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32
-    )
-    set generator=%MINGW_GENERATOR%
+    set cmake_flags=%cmake_flags% -A x64
 )
 
-:: Run CMake
-cmake -G %generator% %cmake_flags% ../..
+:: Run CMake configuration
+cmake -G %GENERATOR% %cmake_flags% ../..
 
-:: Build and install
-if "%USE_MSVC%"=="true" (
-    cmake --build . --config %config%
-    cmake --install . --config %config%
-) else (
-    mingw32-make -j4
-    mingw32-make install
+if %ERRORLEVEL% neq 0 (
+    echo [ERROR] CMake Configuration failed for %arch%-%config%
+    exit /b %ERRORLEVEL%
+)
+
+:: Run Build and Install
+:: --target install will trigger both build and installation
+cmake --build . --config %config% --target install
+
+if %ERRORLEVEL% neq 0 (
+    echo [ERROR] Build failed for %arch%-%config%
+    exit /b %ERRORLEVEL%
 )
 
 popd
