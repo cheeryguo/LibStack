@@ -50,12 +50,7 @@ jobs:
           g++-multilib 
         # Clean up any partial installs
         sudo apt-get autoremove && sudo apt-get autoclean  
-        sudo apt-get install -y gcc-13-aarch64-linux-gnu gcc-13-arm-linux-gnueabihf  
-        sudo apt-get install -y \
-          gcc-arm-linux-gnueabihf \
-          g++-arm-linux-gnueabihf \
-          gcc-aarch64-linux-gnu \
-          g++-aarch64-linux-gnu
+
               
     - name: Cache Build Folder
       uses: actions/cache@v4
@@ -70,12 +65,12 @@ jobs:
         # Make sure the build script is executable
         chmod +x scripts/linux/build_cmake-all.sh
         # Build all architectures and configurations
-        ./scripts/linux/build_cmake-all.sh all all
+        ./scripts/linux/build_cmake-all.sh
 
     - name: Prepare Artifacts for Release
       run: |
         # Create separate archives for each architecture
-        for arch in x64 x86 arm aarch64; do
+        for arch in x64; do
           if [ -d "install/$arch" ]; then
             tar -czvf "libstack-linux-$arch.tar.gz" -C "install/$arch" .
             echo "Created archive for $arch"
@@ -90,9 +85,6 @@ jobs:
       with:
         files: |
           libstack-linux-x64.tar.gz
-          libstack-linux-x86.tar.gz
-          libstack-linux-arm.tar.gz
-          libstack-linux-aarch64.tar.gz
         name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
