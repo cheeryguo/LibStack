@@ -25,3 +25,30 @@
 [submodule "src/Hypodermic-2.5.3"]
 	path = src/Hypodermic-2.5.3
 	url = https://github.com/ybainier/Hypodermic.git
+[submodule "src/libmodbus-3.1.11"]
+	path = src/libmodbus-3.1.11
+	url = https://github.com/stephane/libmodbus.git
+[submodule "src/openssl-3.6.0"]
+	path = src/openssl-3.6.0
+	url = https://github.com/openssl/openssl.git
+[submodule "src/paho.mqtt.cpp-1.5.3"]
+	path = src/paho.mqtt.cpp-1.5.3
+	url = https://github.com/eclipse-paho/paho.mqtt.cpp.git
+[submodule "src/mosquitto-2.0.22"]
+	path = src/mosquitto-2.0.22
+	url = https://github.com/eclipse-mosquitto/mosquitto.git
+[submodule "src/grpc-1.76"]
+	path = src/grpc-1.76
+	url = https://github.com/grpc/grpc.git
+[submodule "src/SOEM-2.0"]
+	path = src/SOEM-2.0
+	url = https://github.com/OpenEtherCATsociety/SOEM.git
+[submodule "src/SOES-3.1"]
+	path = src/SOES-3.1
+	url = https://github.com/OpenEtherCATsociety/SOES.git
+[submodule "src/sml-1.1.13"]
+	path = src/sml-1.1.13
+	url = https://github.com/boost-ext/sml.git
+[submodule "src/ITK-5.4.5"]
+	path = src/ITK-5.4.5
+	url = https://github.com/InsightSoftwareConsortium/ITK.git
