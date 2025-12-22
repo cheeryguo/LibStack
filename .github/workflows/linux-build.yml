@@ -23,7 +23,9 @@ on:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
-
+    # Explicitly grant permission to create/update releases
+    permissions:
+      contents: write
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
