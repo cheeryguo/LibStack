@@ -4,8 +4,8 @@ setlocal enabledelayedexpansion
 :: =============================================
 :: CONFIGURATION (Modify these paths as needed)
 :: =============================================
-set ROOT_DIR=%~dp0
-set OPENSSL_SOURCE=%ROOT_DIR%src\openssl-3.5.0
+set ROOT_DIR=%~dp0%\..\..\
+set OPENSSL_SOURCE=%ROOT_DIR%\src\openssl-3.5.0
 set PERL=C:\Strawberry\perl\bin\perl.exe
 set NASM=C:\Strawberry\c\bin\nasm.exe
 set VS_VCVARS="C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat"

@@ -6,9 +6,9 @@
 :: ===========================================
 
 :: Configuration
-set SRC_DIR=src
-set BUILD_DIR=build
-set INSTALL_DIR=install
+set SRC_DIR=../../src
+set BUILD_DIR=../../build
+set INSTALL_DIR=../../install
 
 :: Architectures and configurations
 set ARCHITECTURES=x86

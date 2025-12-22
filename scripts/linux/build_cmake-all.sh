@@ -5,8 +5,9 @@
 # ===========================================
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 # Build and install directories
-BUILD_DIR="$SCRIPT_DIR/build"
-INSTALL_DIR="$SCRIPT_DIR/install"
+ROOT_DIR=$SCRIPT_DIR/../../"
+BUILD_DIR="$ROOT_DIR/build"
+INSTALL_DIR="$ROOT_DIR/install"
 
 # Architectures and configurations
 ARCHITECTURES=("arm" "aarch64" "x86" "x64")
@@ -29,7 +30,7 @@ build_json() {
     
     local build_path="$BUILD_DIR/$arch-$config/json"
     local install_path="$INSTALL_DIR/$arch"
-    local json_path="$SCRIPT_DIR/src/json-3.11.3"
+    local json_path="$ROOT_DIR/src/json-3.11.3"
 
     echo "Building for $arch ($config) for $json_path and install to ($install_path)"    
     mkdir -p "$build_path"
@@ -121,7 +122,7 @@ build_project() {
         -DCMAKE_BUILD_TYPE="$config" \
         -DCMAKE_INSTALL_PREFIX:PATH="$install_path" \
         $cmake_flags \
-        "$SCRIPT_DIR"
+        "$ROOT_DIR"
     if [ $? -ne 0 ]; then
         echo "CMake configuration failed for $arch ($config)"
         cd - || exit 1
