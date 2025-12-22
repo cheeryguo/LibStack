@@ -21,8 +21,8 @@ if "%USER_CONFIG%"=="" set USER_CONFIG=Release
 
 :: Configuration
 set SRC_DIR=../../src
-set BUILD_DIR=../../build
-set INSTALL_DIR=../../install
+set BUILD_ROOT=build
+set INSTALL_ROOT=install
 
 set GENERATOR="Visual Studio 17 2022"
 
@@ -70,6 +70,11 @@ setlocal
 set arch=%1
 set config=%2
 
+:: Capture the absolute path of the project root (where this script is located)
+:: If the script is in 'scripts/win/', use %~dp0..\..
+:: If the script is in the root, use %~dp0
+set "PROJ_ROOT=%~dp0"
+
 :: Use ^| to escape the pipe character in Batch
 echo.
 echo --------------------------------------------------------
@@ -77,34 +82,37 @@ echo Starting build for Architecture: %arch% ^| Configuration: %config%
 echo --------------------------------------------------------
 
 :: Set build path (unique per config)
-set build_path=%BUILD_DIR%\%arch%-%config%
+set build_path=%BUILD_ROOT%\%arch%-%config%
 :: Set install path (shared per arch)
-set install_path=%INSTALL_DIR%\%arch%-win
+set install_path=%INSTALL_ROOT%\%arch%-win
 
 if not exist "%build_path%" mkdir "%build_path%"
 if not exist "%install_path%" mkdir "%install_path%"
 
 pushd "%build_path%"
 
-:: Base CMake flags
-set cmake_flags=-DCMAKE_INSTALL_PREFIX=../../%install_path% -DCMAKE_BUILD_TYPE=%config%
+:: 1. Define CMake flags
+:: Use absolute paths for INSTALL_PREFIX to avoid confusion
+set "abs_install_path=%PROJ_ROOT%%install_path%"
+set cmake_flags=-DCMAKE_INSTALL_PREFIX="%abs_install_path%" -DCMAKE_BUILD_TYPE=%config%
 
-:: Set MSVC architecture architecture flag (-A)
+:: 2. Set MSVC architecture flag
 if /I "%arch%"=="x86" (
     set cmake_flags=%cmake_flags% -A Win32
 ) else (
     set cmake_flags=%cmake_flags% -A x64
 )
 
-:: Run CMake configuration
-cmake -G %GENERATOR% %cmake_flags% ../..
+:: 3. Run CMake configuration
+:: Use "%PROJ_ROOT%" instead of "../../" to precisely locate CMakeLists.txt
+cmake -G %GENERATOR% %cmake_flags% "%PROJ_ROOT%"
 
 if %ERRORLEVEL% neq 0 (
     echo [ERROR] CMake Configuration failed for %arch%-%config%
     exit /b %ERRORLEVEL%
 )
 
-:: Run Build and Install
+:: 4. Build and Install
 :: --target install will trigger both build and installation
 cmake --build . --config %config% --target install
 

@@ -231,7 +231,7 @@ jobs:
       shell: cmd
       # Pass architecture and config to the batch script
       run: |
-        # Ensure build.bat is aware of the target architecture if needed
+        :: Ensure build.bat is aware of the target architecture if needed
         call scripts/win/build-cmake-all.bat ${{ matrix.arch }} ${{ github.event.inputs.config_choice || 'Release' }}
 
     - name: Prepare Artifacts
