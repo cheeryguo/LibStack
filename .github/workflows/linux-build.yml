@@ -1,13 +1,13 @@
-name: Linux Build (Cached)
+name: Linux Build and Release
 
 on:
   push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
+    tags:
+      - 'v*' # 当你推送以 v 开头的标签（如 v1.0.0）时触发 Release
+  workflow_dispatch: # 允许手动触发
 
 jobs:
-  build-linux:
+  build-and-release:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,22 +21,33 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y build-essential cmake patch
 
-    # --- 缓存逻辑开始 ---
     - name: Cache Build Folder
-      id: cache-build
       uses: actions/cache@v4
       with:
         path: build
-        # key 发生变化时（例如修改了根目录或 src 下的 CMakeLists），缓存会失效并重新触发编译
         key: ${{ runner.os }}-build-${{ hashFiles('**/CMakeLists.txt') }}
         restore-keys: |
           ${{ runner.os }}-build-
-    # --- 缓存逻辑结束 ---
 
-    - name: Configure CMake
-      # 只有缓存未完全命中或需要重新生成时运行
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+    - name: Run Build Script
+      # 确保脚本有执行权限并运行
+      run: |
+        chmod +x build-cmake.sh
+        ./build-cmake.sh
 
-    - name: Build
-      # 如果代码没变，由于 build 目录已被恢复，增量编译会非常快
-      run: cmake --build build --config Release -j $(nproc)
+    - name: Prepare Artifacts for Release
+      # 假设 build-cmake.sh 将结果安装到了 build/install 目录
+      # 我们将其压缩为 tar.gz
+      run: |
+        tar -czvf libstack-linux-x64.tar.gz -C build/install .
+
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v2
+      with:
+        files: libstack-linux-x64.tar.gz
+        name: Release ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

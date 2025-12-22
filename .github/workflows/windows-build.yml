@@ -1,13 +1,13 @@
-name: Windows Build (Cached)
+name: Windows Build and Release
 
 on:
   push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
+    tags:
+      - 'v*' # Trigger on version tags like v1.0.1
+  workflow_dispatch: # Allow manual triggering
 
 jobs:
-  build-windows:
+  build-and-release:
     runs-on: windows-latest
 
     steps:
@@ -19,19 +19,34 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
-    # --- 缓存逻辑开始 ---
     - name: Cache Build Folder
-      id: cache-build
       uses: actions/cache@v4
       with:
         path: build
         key: ${{ runner.os }}-msvc-build-${{ hashFiles('**/CMakeLists.txt') }}
         restore-keys: |
           ${{ runner.os }}-msvc-build-
-    # --- 缓存逻辑结束 ---
 
-    - name: Configure CMake
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+    - name: Run Build Script
+      # Call your batch script. Ensure it handles cmake configure, build, and install.
+      shell: cmd
+      run: |
+        call build.bat
 
-    - name: Build
-      run: cmake --build build --config Release -j 4
+    - name: Prepare Artifacts for Release
+      # Using PowerShell to create a ZIP of the install directory
+      # Assuming build.bat installs files to 'build/install'
+      shell: pwsh
+      run: |
+        Compress-Archive -Path build/install/* -DestinationPath libstack-windows-x64.zip
+
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v2
+      with:
+        files: libstack-windows-x64.zip
+        name: Windows Release ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

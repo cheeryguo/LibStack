@@ -1,12 +1,27 @@
-[submodule "src/pugixml-1.13"]
-	path = src/pugixml-1.13
-	url = https://github.com/zeux/pugixml.git
 [submodule "src/googletest-1.15.2"]
 	path = src/googletest-1.15.2
 	url = https://github.com/google/googletest.git
-[submodule "src/spdlog"]
-	path = src/spdlog
+[submodule "src/spdlog-1.16"]
+	path = src/spdlog-1.16
 	url = https://github.com/gabime/spdlog.git
-[submodule "src/protobuf"]
-	path = src/protobuf
+[submodule "src/protobuf-4.25.8"]
+	path = src/protobuf-4.25.8
 	url = https://github.com/protocolbuffers/protobuf.git
+[submodule "src/pugixml-1.15"]
+	path = src/pugixml-1.15
+	url = https://github.com/zeux/pugixml.git
+[submodule "src/json-3.12"]
+	path = src/json-3.12
+	url = https://github.com/nlohmann/json.git
+[submodule "src/libzmq-4.3.5"]
+	path = src/libzmq-4.3.5
+	url = https://github.com/zeromq/libzmq.git
+[submodule "src/cppzmq-4.11"]
+	path = src/cppzmq-4.11
+	url = https://github.com/zeromq/cppzmq.git
+[submodule "src/eigen-3.4.1"]
+	path = src/eigen-3.4.1
+	url = https://gitlab.com/libeigen/eigen.git
+[submodule "src/Hypodermic-2.5.3"]
+	path = src/Hypodermic-2.5.3
+	url = https://github.com/ybainier/Hypodermic.git
