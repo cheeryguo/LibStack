@@ -32,13 +32,10 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        # Enable architectures for cross-compilation
-        sudo dpkg --add-architecture armhf
-        sudo dpkg --add-architecture arm64
-        
         sudo apt-get update
-        
-        # Install build tools and cross-compilation toolchains
+        # We only need the cross-toolchain packages, which exist in the amd64 repo.
+        # Do NOT use 'dpkg --add-architecture' unless you need to install 
+        # ARM-native libraries (like libssl-dev:arm64).
         sudo apt-get install -y \
           build-essential \
           cmake \
