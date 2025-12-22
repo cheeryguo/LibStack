@@ -32,7 +32,13 @@ jobs:
 
     - name: Install Dependencies
       run: |
+        # Clean apt cache and force update
+        rm -rf /var/lib/apt/lists/*
         sudo apt-get update
+        # Attempt to fix broken dependencies
+        sudo apt-get install -f
+        # Clean up any partial installs
+        sudo apt-get autoremove && sudo apt-get autoclean
         # We only need the cross-toolchain packages, which exist in the amd64 repo.
         # Do NOT use 'dpkg --add-architecture' unless you need to install 
         # ARM-native libraries (like libssl-dev:arm64).
@@ -41,7 +47,9 @@ jobs:
           cmake \
           patch \
           gcc-multilib \
-          g++-multilib \
+          g++-multilib 
+        sudo apt-get install gcc-13-aarch64-linux-gnu gcc-13-arm-linux-gnueabihf  
+        sudo apt-get install -y
           gcc-arm-linux-gnueabihf \
           g++-arm-linux-gnueabihf \
           gcc-aarch64-linux-gnu \
