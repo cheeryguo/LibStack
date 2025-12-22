@@ -58,3 +58,18 @@
 [submodule "src/folly-2025.12.15"]
 	path = src/folly-2025.12.15
 	url = https://github.com/facebook/folly.git
+[submodule "src/jwt-cpp-0.7.1"]
+	path = src/jwt-cpp-0.7.1
+	url = https://github.com/Thalhammer/jwt-cpp.git
+[submodule "src/jsoncons-1.5"]
+	path = src/jsoncons-1.5
+	url = https://github.com/danielaparker/jsoncons.git
+[submodule "src/VTK-9.5.2"]
+	path = src/VTK-9.5.2
+	url = https://github.com/Kitware/VTK.git
+[submodule "src/RTK-2.7"]
+	path = src/RTK-2.7
+	url = https://github.com/RTKConsortium/RTK.git
+[submodule "src/opencv-4.12"]
+	path = src/opencv-4.12
+	url = https://github.com/opencv/opencv.git
