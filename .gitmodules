@@ -52,3 +52,6 @@
 [submodule "src/ITK-5.4.5"]
 	path = src/ITK-5.4.5
 	url = https://github.com/InsightSoftwareConsortium/ITK.git
+[submodule "src/epics-base-7.0.10"]
+	path = src/epics-base-7.0.10
+	url = https://github.com/epics-base/epics-base.git
