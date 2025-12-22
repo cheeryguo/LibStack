@@ -35,16 +35,26 @@ jobs:
       fail-fast: false
       matrix:
         arch: [x86, x64, aarch64, arm]
-        config: [Release]
-
-    # Critical logic: Only run the job if it matches the manual choice OR it's not a manual trigger
-    if: |
-      github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.arch_choice == 'all' ||
-      github.event.inputs.arch_choice == matrix.arch
+        configs: [Release]
 
     steps:
+    # 1. First, we check if this specific matrix combination should run
+    - name: Check if job should run
+      id: check_run
+      run: |
+        # Logic: If it's manual and doesn't match choice, set a flag
+        SHOULD_RUN="true"
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          CHOICE="${{ github.event.inputs.arch_choice }}"
+          if [ "$CHOICE" != "all" ] && [ "$CHOICE" != "${{ matrix.arch }}" ]; then
+            SHOULD_RUN="false"
+          fi
+        fi
+        echo "SHOULD_RUN=$SHOULD_RUN" >> $GITHUB_ENV
+        echo "should_run=$SHOULD_RUN" >> $GITHUB_OUTPUT
+    
     - name: Checkout code
+      if: env.SHOULD_RUN == 'true'
       uses: actions/checkout@v4
       with:
         submodules: recursive
@@ -52,6 +62,7 @@ jobs:
 
     - name: Get Version and Metadata
       id: meta
+      if: env.SHOULD_RUN == 'true'
       run: |
         # Determine version name
         if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
@@ -71,6 +82,7 @@ jobs:
         echo "ASSET_NAME=libstack-${VERSION}-${{ matrix.arch }}-${SHA}" >> $GITHUB_ENV
 
     - name: Install Dependencies
+      if: env.SHOULD_RUN == 'true'
       run: |
         # 1. Base tools for all architectures
 
@@ -108,6 +120,7 @@ jobs:
         sudo apt-get autoremove && sudo apt-get autoclean
 
     - name: Cache Build Folder
+      if: env.SHOULD_RUN == 'true'
       uses: actions/cache@v4
       with:
         path: build
@@ -117,13 +130,15 @@ jobs:
           ${{ runner.os }}-build-${{ matrix.arch }}-
 
     - name: Run Build Script
+      if: env.SHOULD_RUN == 'true'
       run: |
         # Make sure the build script is executable
         chmod +x scripts/linux/build_cmake-all.sh
         # Pass current matrix parameters to the shell script
-        ./scripts/linux/build_cmake-all.sh ${{ matrix.arch }} ${{ matrix.config }}
+        ./scripts/linux/build_cmake-all.sh ${{ matrix.arch }} ${{ matrix.configs }}
 
     - name: Prepare Artifacts for Release
+      if: env.SHOULD_RUN == 'true'
       run: |
         # Create separate archives for each architecture
         # Create directory and compress based on matrix architecture
@@ -138,7 +153,7 @@ jobs:
 
     - name: Create GitHub Release
       # Trigger if it's a tag OR if it's a manual trigger
-      if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' || github.ref_name == 'master'
+      if: env.SHOULD_RUN == 'true' && (startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' || github.ref_name == 'master')
       uses: softprops/action-gh-release@v2
       with:
         files: release_dist/${{ env.ASSET_NAME }}.tar.gz
