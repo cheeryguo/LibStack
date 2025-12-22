@@ -54,33 +54,3 @@ endif()
 # Subprojects must be added first so they can register themselves to the export set
 add_subdirectory(src)
 
-# --- 6. Export & Package Configuration (MOVE THIS DOWN) ---
-set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/libstack)
-include(CMakePackageConfigHelpers)
-
-# Generate Version file
-write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/libstackConfigVersion.cmake"
-    VERSION 1.0.0
-    COMPATIBILITY SameMajorVersion
-)
-
-# NOW CMake knows about "libstackTargets" because src/ was processed
-install(EXPORT libstackTargets
-    FILE libstackTargets.cmake
-    NAMESPACE libstack::
-    DESTINATION ${INSTALL_CONFIGDIR}
-)
-
-# Create the Config File
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/libstackConfig.cmake"
-"include(CMakeFindDependencyMacro)
-include(\"\${CMAKE_CURRENT_LIST_DIR}/libstackTargets.cmake\")
-")
-
-# Install Config files
-install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/libstackConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/libstackConfigVersion.cmake"
-    DESTINATION ${INSTALL_CONFIGDIR}
-)
