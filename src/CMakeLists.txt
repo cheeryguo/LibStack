@@ -51,7 +51,7 @@ if(LIBSTACK_BUILD_PROTOBUF)
         add_compile_options("/UPROTOBUF_USE_DLLS")
     endif()
 
-    add_subdirectory(protobuf-25.8)
+    add_subdirectory(protobuf-4.25.8)
 endif()
 
 # --- 6. spdlog ---
