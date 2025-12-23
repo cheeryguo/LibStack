@@ -158,14 +158,14 @@ endif()
 # --- 14. Hypodermic ---
 if(LIBSTACK_BUILD_HYPODERMIC)
     execute_process(
-        COMMAND ${PATCH_EXE} --dry-run -p1 -i ${CMAKE_CURRENT_SOURCE_DIR}/hypodermic-2.5.3.patch
+        COMMAND ${PATCH_EXE} --dry-run -p1 -i ${CMAKE_CURRENT_SOURCE_DIR}/Hypodermic-2.5.3.patch
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Hypodermic-2.5.3
         RESULT_VARIABLE patch_check
     )
 
     if(patch_check EQUAL 0)
         execute_process(
-            COMMAND ${PATCH_EXE} -p1 -i ${CMAKE_CURRENT_SOURCE_DIR}/hypodermic-2.5.3.patch
+            COMMAND ${PATCH_EXE} -p1 -i ${CMAKE_CURRENT_SOURCE_DIR}/Hypodermic-2.5.3.patch
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Hypodermic-2.5.3
         )
     endif()
