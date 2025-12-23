@@ -58,6 +58,12 @@ if(LIBSTACK_BUILD_PAHO)
     add_subdirectory(paho.mqtt.cpp-1.5.3)
 endif()
 
+
+if(LIBSTACK_BUILD_ABSEIL)
+    set(ABSL_ENABLE_INSTALL ON CACHE BOOL "" FORCE)
+    add_subdirectory(abseil-cpp-2025.8-lts)
+endif()
+
 # --- 5. Protobuf ---
 if(LIBSTACK_BUILD_PROTOBUF)
     set(protobuf_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -172,10 +178,7 @@ if(LIBSTACK_BUILD_HYPODERMIC)
     add_subdirectory(Hypodermic-2.5.3)
 endif()
 
-if(LIBSTACK_BUILD_ABSEIL)
-    set(ABSL_ENABLE_INSTALL ON CACHE BOOL "" FORCE)
-    add_subdirectory(abseil-cpp-2025.8-lts)
-endif()
+
 
 # --- Summary Printout ---
 message(STATUS "--------------------------------------------")
