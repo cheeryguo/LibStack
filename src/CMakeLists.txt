@@ -5,19 +5,19 @@ find_program(PATCH_EXE patch REQUIRED)
 option(LIBSTACK_BUILD_GTEST "Build GoogleTest" ON)
 option(LIBSTACK_BUILD_PAHO "Build Paho MQTT C++" OFF)
 option(LIBSTACK_BUILD_MOSQUITTO "Build Mosquitto" OFF)
-option(LIBSTACK_BUILD_PROTOBUF "Build Protobuf" OFF)
+option(LIBSTACK_BUILD_PROTOBUF "Build Protobuf" ON)
 option(LIBSTACK_BUILD_SPDLOG "Build spdlog" ON)
-option(LIBSTACK_BUILD_ZMQ "Build ZeroMQ and cppzmq" OFF)
+option(LIBSTACK_BUILD_ZMQ "Build ZeroMQ and cppzmq" ON)
 option(LIBSTACK_BUILD_JSON "Build nlohmann_json" OFF)
 option(LIBSTACK_BUILD_JSONCONS "Build jsoncons" OFF)
 option(LIBSTACK_BUILD_JWT "Build jwt-cpp" OFF)
 option(LIBSTACK_BUILD_SOES "Build SOES (with Zynq SPI patch)" OFF)
 option(LIBSTACK_BUILD_EIGEN "Build Eigen3" ON)
-option(LIBSTACK_BUILD_SML "Build SML" OFF)
+option(LIBSTACK_BUILD_SML "Build SML" ON)
 option(LIBSTACK_BUILD_PUGIXML "Build pugixml" ON)
 option(LIBSTACK_BUILD_MODBUS "Build libmodbus" OFF)
 option(LIBSTACK_BUILD_SOEM "Build SOEM" OFF)
-option(LIBSTACK_BUILD_HYPODERMIC "Build Hypodermic" OFF)
+option(LIBSTACK_BUILD_HYPODERMIC "Build Hypodermic" ON)
 
 # --- 2. Global Configurations ---
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
@@ -65,7 +65,7 @@ if(LIBSTACK_BUILD_PROTOBUF)
         add_compile_options("/UPROTOBUF_USE_DLLS")
     endif()
 
-    add_subdirectory(protobuf-25.8)
+    add_subdirectory(protobuf-4.25.8)
 endif()
 
 # --- 6. spdlog ---
@@ -81,7 +81,7 @@ if(LIBSTACK_BUILD_ZMQ)
     add_subdirectory(zeromq-4.3.5)
 
     set(CPPZMQ_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    add_subdirectory(cppzmq-4.10.0)
+    add_subdirectory(cppzmq-4.11)
 endif()
 
 
@@ -129,7 +129,7 @@ if(LIBSTACK_BUILD_EIGEN)
 endif()
 
 if(LIBSTACK_BUILD_SML)
-    add_subdirectory(sml-1.1.12)
+    add_subdirectory(sml-1.1.13)
 endif()
 
 if(LIBSTACK_BUILD_PUGIXML)
