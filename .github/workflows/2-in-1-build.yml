@@ -211,7 +211,7 @@ jobs:
         # 3. Export to environment
         echo "VERSION=$VERSION" >> $env:GITHUB_ENV
         # Format: libstack-<version>-windows-x64-<sha>
-        echo "ASSET_NAME=libstack-$VERSION-windows-x64-$SHA" >> $env:GITHUB_ENV
+        echo "ASSET_NAME=libstack-$VERSION-windows-${{ matrix.arch }}-$SHA" >> $env:GITHUB_ENV
 
     - name: Add MSBuild to PATH
       if: env.SHOULD_RUN == 'true'
