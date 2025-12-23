@@ -94,7 +94,7 @@ pushd "%build_path%"
 echo Current Working Directory: %cd%
 :: 1. Define CMake flags
 :: Use absolute paths for INSTALL_PREFIX to avoid confusion
-set "abs_install_path=%PROJ_ROOT%%install_path%"
+set "abs_install_path=%PROJ_ROOT%/../../%install_path%"
 set cmake_flags=-DCMAKE_INSTALL_PREFIX="%abs_install_path%" -DCMAKE_BUILD_TYPE=%config%
 
 :: 2. Set MSVC architecture flag

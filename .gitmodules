@@ -67,3 +67,6 @@
 [submodule "src/opencv-4.12"]
 	path = src/opencv-4.12
 	url = https://github.com/opencv/opencv.git
+[submodule "src/abseil-cpp-2025.8-lts"]
+	path = src/abseil-cpp-2025.8-lts
+	url = https://github.com/abseil/abseil-cpp.git
