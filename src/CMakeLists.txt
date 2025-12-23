@@ -80,7 +80,7 @@ endif()
 if(LIBSTACK_BUILD_ZMQ)
     set(ZMQ_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     set(BUILD_SHARED OFF CACHE BOOL "" FORCE)
-    add_subdirectory(zeromq-4.3.5)
+    add_subdirectory(libzmq-4.3.5)
 
     set(CPPZMQ_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     add_subdirectory(cppzmq-4.11)
@@ -157,6 +157,18 @@ endif()
 
 # --- 14. Hypodermic ---
 if(LIBSTACK_BUILD_HYPODERMIC)
+    execute_process(
+        COMMAND ${PATCH_EXE} --dry-run -p1 -i ${CMAKE_CURRENT_SOURCE_DIR}/hypodermic-2.5.3.patch
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Hypodermic-2.5.3
+        RESULT_VARIABLE patch_check
+    )
+
+    if(patch_check EQUAL 0)
+        execute_process(
+            COMMAND ${PATCH_EXE} -p1 -i ${CMAKE_CURRENT_SOURCE_DIR}/hypodermic-2.5.3.patch
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Hypodermic-2.5.3
+        )
+    endif()
     set(Hypodermic_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     add_subdirectory(Hypodermic-2.5.3)
 endif()

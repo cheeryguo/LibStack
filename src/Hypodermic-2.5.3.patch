@@ -1,0 +1,24 @@
+diff -urN Hypodermic-2.5.3/CMakeLists.txt ../Hypodermic-2.5.3/CMakeLists.txt
+--- Hypodermic-2.5.3/CMakeLists.txt	2021-09-22 00:39:45.000000000 +0800
++++ ../Hypodermic-2.5.3/CMakeLists.txt	2025-12-23 22:39:44.563397100 +0800
+@@ -10,6 +10,8 @@
+ 
+ enable_testing()
+ 
++option(Hypodermic_BUILD_TESTS "Build tests" ON)
++
+ # enable gcc specific stuff
+ if(CMAKE_COMPILER_IS_GNUCXX)
+     if(NOT CXX11_ENABLED)
+@@ -76,7 +78,10 @@
+ 
+ 
+ add_subdirectory(Hypodermic)
+-add_subdirectory(Hypodermic.Tests)
++
++if(Hypodermic_BUILD_TESTS)
++    add_subdirectory(Hypodermic.Tests)
++endif()
+ 
+ 
+ # uninstall target
