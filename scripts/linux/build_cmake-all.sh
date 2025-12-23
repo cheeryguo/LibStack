@@ -207,7 +207,6 @@ for arch in "${TARGET_ARCHES[@]}"; do
     export nlohmann_json_DIR="$INSTALL_DIR/$arch/share/cmake/nlohmann_json/"
 
     for config in "${TARGET_CONFIGS[@]}"; do
-        build_json "$arch" "$config"
         build_project "$arch" "$config"
     done
 done

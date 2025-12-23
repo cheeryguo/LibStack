@@ -19,6 +19,8 @@ option(LIBSTACK_BUILD_MODBUS "Build libmodbus" OFF)
 option(LIBSTACK_BUILD_SOEM "Build SOEM" OFF)
 option(LIBSTACK_BUILD_HYPODERMIC "Build Hypodermic" ON)
 
+option(LIBSTACK_BUILD_PROTOBUF "Build Protobuf" ON)
+
 # --- 2. Global Configurations ---
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
