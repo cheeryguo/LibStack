@@ -143,6 +143,7 @@ if(LIBSTACK_BUILD_HYPODERMIC)
 endif()
 
 if(LIBSTACK_BUILD_ABSEIL)
+    set(ABSL_ENABLE_INSTALL ON CACHE BOOL "" FORCE)
     add_subdirectory(abseil-cpp-2025.8-lts)
 endif()
 
