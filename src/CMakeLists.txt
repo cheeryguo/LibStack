@@ -18,8 +18,7 @@ option(LIBSTACK_BUILD_PUGIXML "Build pugixml" ON)
 option(LIBSTACK_BUILD_MODBUS "Build libmodbus" OFF)
 option(LIBSTACK_BUILD_SOEM "Build SOEM" OFF)
 option(LIBSTACK_BUILD_HYPODERMIC "Build Hypodermic" ON)
-
-option(LIBSTACK_BUILD_PROTOBUF "Build Protobuf" ON)
+option(LIBSTACK_BUILD_ABSEIL "Build Abseil" ON)
 
 # --- 2. Global Configurations ---
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
@@ -171,6 +170,11 @@ if(LIBSTACK_BUILD_HYPODERMIC)
     endif()
     set(Hypodermic_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     add_subdirectory(Hypodermic-2.5.3)
+endif()
+
+if(LIBSTACK_BUILD_ABSEIL)
+    set(ABSL_ENABLE_INSTALL ON CACHE BOOL "" FORCE)
+    add_subdirectory(abseil-cpp-2025.8-lts)
 endif()
 
 # --- Summary Printout ---
