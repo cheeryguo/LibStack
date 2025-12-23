@@ -143,7 +143,7 @@ if(LIBSTACK_BUILD_HYPODERMIC)
 endif()
 
 if(LIBSTACK_BUILD_ABSEIL)
-    add_subdirectory(abseil-cpp-20230125.3)
+    add_subdirectory(abseil-cpp-2025.8-lts)
 endif()
 
 # --- Summary Printout ---
