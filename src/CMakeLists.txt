@@ -2,22 +2,7 @@ project(src)
 find_program(PATCH_EXE patch REQUIRED)
 
 # --- 1. Library Build Options ---
-option(LIBSTACK_BUILD_GTEST "Build GoogleTest" ON)
-option(LIBSTACK_BUILD_PAHO "Build Paho MQTT C++" OFF)
-option(LIBSTACK_BUILD_MOSQUITTO "Build Mosquitto" OFF)
-option(LIBSTACK_BUILD_PROTOBUF "Build Protobuf" OFF)
-option(LIBSTACK_BUILD_SPDLOG "Build spdlog" ON)
-option(LIBSTACK_BUILD_ZMQ "Build ZeroMQ and cppzmq" OFF)
-option(LIBSTACK_BUILD_JSON "Build nlohmann_json" OFF)
-option(LIBSTACK_BUILD_JSONCONS "Build jsoncons" OFF)
-option(LIBSTACK_BUILD_JWT "Build jwt-cpp" OFF)
-option(LIBSTACK_BUILD_SOES "Build SOES (with Zynq SPI patch)" OFF)
-option(LIBSTACK_BUILD_EIGEN "Build Eigen3" ON)
-option(LIBSTACK_BUILD_SML "Build SML" OFF)
-option(LIBSTACK_BUILD_PUGIXML "Build pugixml" ON)
-option(LIBSTACK_BUILD_MODBUS "Build libmodbus" OFF)
-option(LIBSTACK_BUILD_SOEM "Build SOEM" OFF)
-option(LIBSTACK_BUILD_HYPODERMIC "Build Hypodermic" OFF)
+option(LIBSTACK_BUILD_ABSEIL "Build Abseil" ON)
 
 # --- 2. Global Configurations ---
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
@@ -30,8 +15,7 @@ endif()
 
 # --- 4. Paho MQTT C++ / Mosquitto ---
 
-#TBD: under windows, mosquitto and paho.mqtt.cpp are not enabled together, an workaround is needed: first build mosquittio, then build paho.mqtt.cpp
-
+# TBD: under windows, mosquitto and paho.mqtt.cpp are not enabled together, an workaround is needed: first build mosquittio, then build paho.mqtt.cpp
 if(LIBSTACK_BUILD_MOSQUITTO)
     set(WITH_TLS OFF CACHE BOOL "Include SSL/TLS support?")
     set(WITH_CJSON OFF CACHE BOOL "Include CJSON support?" FORCE)
@@ -83,7 +67,6 @@ if(LIBSTACK_BUILD_ZMQ)
     set(CPPZMQ_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     add_subdirectory(cppzmq-4.10.0)
 endif()
-
 
 # --- 8. nlohmann_json ---
 if(LIBSTACK_BUILD_JSON)
@@ -157,6 +140,10 @@ endif()
 if(LIBSTACK_BUILD_HYPODERMIC)
     set(Hypodermic_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     add_subdirectory(Hypodermic-2.5.3)
+endif()
+
+if(LIBSTACK_BUILD_ABSEIL)
+    add_subdirectory(abseil-cpp-20230125.3)
 endif()
 
 # --- Summary Printout ---
